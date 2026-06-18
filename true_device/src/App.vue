@@ -10,6 +10,10 @@
           </div>
         </router-link>
 
+        <button class="mobile-nav-toggle" @click="navOpen = !navOpen" aria-label="Toggle navigation">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16M4 12h16M4 18h16" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
         <nav class="nav-links">
           <router-link to="/" class="nav-link">Головна</router-link>
           <router-link to="/products" class="nav-link">Товари</router-link>
@@ -35,13 +39,33 @@
             </div>
 
             <div v-if="menuOpen" class="profile-menu absolute right-0 mt-2 w-52 bg-slate-950 text-white shadow-2xl rounded-xl py-2 z-50 ring-1 ring-white/10">
-              <router-link to="/my-orders" class="profile-menu-item">Мої замовлення</router-link>
-              <router-link to="/profile" class="profile-menu-item">Профіль</router-link>
-              <div class="profile-menu-divider"></div>
-              <button @click="handleLogout" class="profile-menu-item profile-menu-item--danger">Вийти</button>
+              <template v-if="isAdmin">
+                <router-link to="/admin" class="profile-menu-item">Адмін-панель</router-link>
+                <div class="profile-menu-divider"></div>
+                <button @click="handleLogout" class="profile-menu-item profile-menu-item--danger">Вийти</button>
+              </template>
+              <template v-else>
+                <router-link to="/my-orders" class="profile-menu-item">Мої замовлення</router-link>
+                <router-link to="/profile" class="profile-menu-item">Профіль</router-link>
+                <div class="profile-menu-divider"></div>
+                <button @click="handleLogout" class="profile-menu-item profile-menu-item--danger">Вийти</button>
+              </template>
             </div>
           </div>
         </nav>
+
+        <div v-if="navOpen" class="mobile-nav">
+          <router-link to="/" class="nav-link" @click.native="navOpen = false">Головна</router-link>
+          <router-link to="/products" class="nav-link" @click.native="navOpen = false">Товари</router-link>
+          <router-link to="/contact" class="nav-link" @click.native="navOpen = false">Контакти</router-link>
+          <router-link to="/cart" class="nav-link nav-link--cart" @click.native="navOpen = false">Кошик
+            <span class="cart-badge" v-if="itemCount > 0">{{ itemCount }}</span>
+          </router-link>
+          <router-link v-if="!isAuthenticated" to="/login" class="nav-link" @click.native="navOpen = false">Авторизація</router-link>
+          <div v-else class="nav-link" @click="navOpen = false">
+            <router-link to="/profile" class="nav-link">Профіль</router-link>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -65,7 +89,8 @@ export default {
   name: 'App',
   data() {
     return {
-      menuOpen: false
+      menuOpen: false,
+      navOpen: false
     }
   },
   computed: {
@@ -74,6 +99,11 @@ export default {
     },
     isAuthenticated() {
       return authStore.isAuthenticated.value
+    },
+    isAdmin() {
+      const adminEmail = (import.meta.env.VITE_ADMIN_EMAIL || '').toLowerCase()
+      const userEmail = (authStore.state.user?.email || '').toLowerCase()
+      return adminEmail && userEmail === adminEmail
     },
     userEmail() {
       return authStore.state.user?.email || ''

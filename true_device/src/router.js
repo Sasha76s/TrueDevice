@@ -8,6 +8,7 @@ import Login from './views/Login.vue'
 import Contact from './views/Contact.vue'
 import MyOrders from './views/MyOrders.vue'
 import Profile from './views/Profile.vue'
+import Admin from './views/Admin.vue'
 import authStore from './authStore.js'
 
 const routes = [
@@ -19,6 +20,7 @@ const routes = [
   { path: '/contact', component: Contact },
   { path: '/my-orders', component: MyOrders, meta: { requiresAuth: true } },
   { path: '/profile', component: Profile, meta: { requiresAuth: true } },
+  { path: '/admin', component: Admin, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/login', component: Login }
 ]
 
@@ -28,11 +30,25 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth && !authStore.isAuthenticated.value) {
+  const requiresAuth = to.meta.requiresAuth
+  const requiresAdmin = to.meta.requiresAdmin
+
+  if (requiresAuth && !authStore.isAuthenticated.value) {
     next({ path: '/login', query: { redirect: to.fullPath } })
-  } else {
-    next()
+    return
   }
+
+  if (requiresAdmin) {
+    const adminEmail = (import.meta.env.VITE_ADMIN_EMAIL || '').toLowerCase()
+    const userEmail = (authStore.state.user?.email || '').toLowerCase()
+
+    if (!adminEmail || userEmail !== adminEmail) {
+      next({ path: '/profile' })
+      return
+    }
+  }
+
+  next()
 })
 
 export default router
