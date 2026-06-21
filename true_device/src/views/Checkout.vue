@@ -59,7 +59,7 @@
           <div class="mt-6 space-y-4">
             <div v-for="item in cart" :key="item.id" class="border-b border-slate-200 pb-4">
               <div class="flex items-center gap-4">
-                <img :src="item.image" :alt="item.name" class="w-20 h-20 rounded-3xl object-cover" />
+                <img :src="item.image" :alt="item.name" class="w-20 h-20 rounded-3xl object-cover cart-item-image" />
                 <div>
                   <h4 class="font-semibold text-lg">{{ item.name }}</h4>
                   <p class="text-sm text-slate-600">{{ item.quantity }} x {{ item.price }} ₴</p>
