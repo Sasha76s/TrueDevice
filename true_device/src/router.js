@@ -9,6 +9,7 @@ import Contact from './views/Contact.vue'
 import MyOrders from './views/MyOrders.vue'
 import Profile from './views/Profile.vue'
 import Admin from './views/Admin.vue'
+import Messages from './views/Messages.vue'
 import authStore from './authStore.js'
 
 const routes = [
@@ -21,6 +22,7 @@ const routes = [
   { path: '/my-orders', component: MyOrders, meta: { requiresAuth: true } },
   { path: '/profile', component: Profile, meta: { requiresAuth: true } },
   { path: '/admin', component: Admin, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/messages', component: Messages, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/login', component: Login }
 ]
 
