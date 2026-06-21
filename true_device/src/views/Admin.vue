@@ -149,6 +149,30 @@
         </div>
       </div>
     </div>
+
+    <!-- Повідомлення від користувачів -->
+    <div class="admin-messages mt-12">
+      <h3 class="text-2xl font-bold mb-6">Повідомлення від користувачів ({{ messages.length }})</h3>
+
+      <div v-if="messages.length === 0" class="text-center py-6">
+        <p class="text-muted">Немає повідомлень.</p>
+      </div>
+
+      <div v-else class="messages-list glass-card p-4">
+        <div v-for="msg in messages" :key="msg.id" class="message-row border-b py-4">
+          <div class="flex justify-between items-start gap-4">
+            <div>
+              <div class="font-semibold">{{ msg.name || 'Анонім' }} <span class="text-sm text-muted">• {{ msg.email }}</span></div>
+              <div class="text-sm text-muted mt-1">{{ new Date(msg.created_at).toLocaleString() }}</div>
+            </div>
+            <div>
+              <button @click="deleteMessage(msg.id)" class="btn-danger btn-admin-small">Видалити</button>
+            </div>
+          </div>
+          <p class="product-meta mt-3">{{ msg.message }}</p>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -170,6 +194,7 @@ export default {
       editingProductId: null,
       categories: ['Телефони', 'Аксесуари', 'Навушники', 'Ноутбуки', 'Планшети', 'Годинники'],
       products: [],
+      messages: [],
       isLoading: false,
       isDeleting: false,
       successMessage: '',
@@ -188,6 +213,7 @@ export default {
     }
 
     await this.loadProducts()
+    await this.loadMessages()
   },
   methods: {
     async submitProduct() {
@@ -295,6 +321,37 @@ export default {
         this.errorMessage = 'Не вдалося видалити товар'
       } finally {
         this.isDeleting = false
+      }
+    },
+
+    async loadMessages() {
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+        this.messages = data || []
+      } catch (err) {
+        console.error('Error loading messages:', err)
+        // don't block admin UI if messages fail
+      }
+    },
+
+    async deleteMessage(messageId) {
+      if (!confirm('Видалити це повідомлення?')) return
+      try {
+        const { error } = await supabase
+          .from('messages')
+          .delete()
+          .eq('id', messageId)
+
+        if (error) throw error
+        await this.loadMessages()
+      } catch (err) {
+        console.error('Error deleting message:', err)
+        alert('Не вдалося видалити повідомлення')
       }
     },
 
